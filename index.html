@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Planner | 나만의 일정 관리</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="layout">
+
+    <!-- ===================== 사이드바 ===================== -->
+    <!-- data-page 값과 아래 <section id="page-OOO">의 OOO가 짝이 됨 -->
+    <aside class="sidebar">
+      <div class="logo">★ ʜʏᴇ ᴇᴜɴ ★</div>
+      <nav class="nav">
+        <a href="#dashboard" class="nav-item" data-page="dashboard">📆 <span>ᴄᴀʟᴇɴᴅᴀʀ</span></a>
+        <a href="#todo" class="nav-item" data-page="todo">☑️ <span>ᴛᴏ ᴅᴏ ʟɪsᴛ</span></a>
+        <a href="#pomodoro" class="nav-item" data-page="pomodoro">⏱️ <span>ᴘᴏᴍᴏᴅᴏʀᴏ</span></a>
+        <a href="#youtube" class="nav-item" data-page="youtube">🎵 <span>ᴘʟᴀʏʟɪsᴛ</span></a>
+        <a href="#study-log" class="nav-item" data-page="study-log">📚 <span>sᴛᴜᴅʏ</span></a>
+        <a href="#diary" class="nav-item" data-page="diary">📔 <span>ᴅɪᴀʀʏ</span></a>
+      </nav>
+    </aside>
+
+    <!-- ===================== 메인 ===================== -->
+    <main class="main">
+
+      <!-- 공통 헤더: 페이지가 바뀌면 제목도 JS로 바뀜 -->
+      <header class="header">
+        <div>
+          <p class="date" id="today-date"></p>
+          <h1 class="page-title" id="page-title">할 일이 왜이리 많은지🫠</h1>
+        </div>
+
+        <!-- 유튜브 미니 플레이어: 어느 페이지에서든 재생/일시정지 -->
+        <div class="yt-mini">
+          <button class="yt-btn" id="yt-toggle" aria-label="공부 영상 재생">▶</button>
+          <div class="yt-info">
+            <span class="yt-label">공부 영상</span>
+            <span class="yt-status" id="yt-status">링크를 넣어 주세요</span>
+          </div>
+          <a href="#youtube" class="yt-link" title="공부 영상 페이지로">↗</a>
+        </div>
+      </header>
+
+      <!-- ========== 1. 대시보드 (캘린더) ========== -->
+      <section class="page" id="page-dashboard">
+        <div class="cal-layout">
+
+          <!-- 큰 캘린더 -->
+          <div class="card calendar-card">
+            <div class="cal-header">
+              <div class="cal-nav">
+                <button class="icon-btn" id="cal-prev" aria-label="이전 달">‹</button>
+                <h2 id="cal-title"></h2>
+                <button class="icon-btn" id="cal-next" aria-label="다음 달">›</button>
+              </div>
+              <div class="cal-actions">
+                <button class="chip" id="cal-today">오늘</button>
+                <button class="btn btn-primary btn-sm" id="cal-add">+ 일정</button>
+              </div>
+            </div>
+
+            <div class="cal-weekdays">
+              <span class="sun">일</span><span>월</span><span>화</span><span>수</span>
+              <span>목</span><span>금</span><span class="sat">토</span>
+            </div>
+            <!-- 날짜 칸은 JS가 그려 넣음 -->
+            <div class="cal-grid" id="cal-grid"></div>
+          </div>
+
+          <!-- 오른쪽 패널 -->
+          <div class="side-panel">
+            <div class="stats">
+              <a href="#todo" class="stat">
+                <span class="stat-label">남은 할 일</span>
+                <strong class="stat-value" id="dash-todo-count">0</strong>
+              </a>
+              <a href="#study-log" class="stat">
+                <span class="stat-label">오늘 공부</span>
+                <strong class="stat-value" id="dash-study-total">0h 00m</strong>
+              </a>
+            </div>
+
+            <!-- 선택한 날짜의 일정 -->
+            <div class="card day-card">
+              <div class="card-header">
+                <h2 id="day-title"></h2>
+                <button class="chip" id="day-add">+ 추가</button>
+              </div>
+              <ul class="day-events scroll" id="day-events"></ul>
+            </div>
+
+            <!-- 분류(카테고리) 관리 -->
+            <div class="card cat-card">
+              <div class="card-header">
+                <h2>분류</h2>
+                <span class="sub-text small" style="margin:0">색을 눌러 변경 · 이름을 눌러 숨기기</span>
+              </div>
+              <ul class="cat-list" id="cat-list"></ul>
+              <form class="cat-form" id="cat-form">
+                <input type="color" id="cat-color" value="#20c997" aria-label="색상" />
+                <input type="text" id="cat-name" placeholder="새 분류 이름" maxlength="10" />
+                <button type="submit" class="btn btn-primary btn-sm">추가</button>
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========== 2. 투두리스트 ========== -->
+      <section class="page" id="page-todo">
+        <div class="card card-fill">
+          <form class="row-form" id="todo-form">
+            <input type="text" id="todo-input" placeholder="할 일을 입력하세요" />
+            <button type="submit" class="btn btn-primary">추가</button>
+          </form>
+
+          <div class="filter-tabs" id="todo-filters">
+            <button class="chip active" data-filter="all">전체</button>
+            <button class="chip" data-filter="active">진행 중</button>
+            <button class="chip" data-filter="done">완료</button>
+            <button class="chip chip-danger" id="clear-done">완료 항목 삭제</button>
+          </div>
+
+          <ul class="todo-list scroll" id="todo-list"></ul>
+        </div>
+      </section>
+
+      <!-- ========== 3. 뽀모도로 ========== -->
+      <section class="page" id="page-pomodoro">
+        <div class="card card-fill card-center">
+          <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="focus">집중 25분</button>
+            <button class="mode-tab" data-mode="short">짧은 휴식 5분</button>
+            <button class="mode-tab" data-mode="long">긴 휴식 15분</button>
+          </div>
+
+          <div class="timer-display" id="timer-display">25:00</div>
+
+          <div class="timer-controls">
+            <button class="btn btn-primary" id="btn-start">시작</button>
+            <button class="btn btn-outline" id="btn-pause">일시정지</button>
+            <button class="btn btn-outline" id="btn-reset">리셋</button>
+          </div>
+
+          <p class="sub-text">오늘 완료한 뽀모도로: <strong id="pomo-count">0</strong>회</p>
+          <p class="sub-text small">💡 다른 메뉴로 이동해도 타이머는 계속 돌아가요</p>
+        </div>
+      </section>
+
+      <!-- ========== 4. 공부 영상 ========== -->
+      <section class="page" id="page-youtube">
+        <div class="card card-fill">
+          <form class="row-form" id="youtube-form">
+            <input type="url" id="youtube-input" placeholder="유튜브 링크를 붙여넣으세요" />
+            <button type="submit" class="btn btn-primary">재생</button>
+          </form>
+
+          <div class="video-wrapper" id="video-wrapper">
+            <p class="placeholder">링크를 입력하면 여기에서 영상이 재생돼요 🎧</p>
+          </div>
+          <p class="sub-text small">💡 다른 메뉴로 이동해도 영상 소리는 계속 나와요</p>
+        </div>
+      </section>
+
+      <!-- ========== 5. 공부 기록 ========== -->
+      <section class="page" id="page-study-log">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header"><h2>오늘 기록</h2></div>
+            <form class="row-form" id="log-form">
+              <input type="text" id="log-subject" placeholder="과목" />
+              <input type="number" id="log-minutes" placeholder="분" min="1" />
+              <button type="submit" class="btn btn-primary">기록</button>
+            </form>
+            <ul class="log-list scroll" id="log-list"></ul>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h2>최근 7일</h2></div>
+            <div class="week-chart" id="week-chart"></div>
+            <p class="sub-text small" id="week-total"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== 6. 다이어리 ========== -->
+      <section class="page" id="page-diary">
+        <div class="two-col diary-layout">
+          <!-- 쓰기 -->
+          <div class="card diary-editor">
+            <div class="diary-top">
+              <input type="date" id="diary-date" />
+              <div class="mood-picker" id="mood-picker">
+                <button class="mood" data-mood="😄" title="최고">😄</button>
+                <button class="mood" data-mood="🙂" title="좋음">🙂</button>
+                <button class="mood" data-mood="😐" title="보통">😐</button>
+                <button class="mood" data-mood="😢" title="슬픔">😢</button>
+                <button class="mood" data-mood="😡" title="화남">😡</button>
+              </div>
+            </div>
+
+            <input type="text" id="diary-title" class="diary-title" placeholder="제목" />
+            <textarea id="diary-content" class="diary-content" placeholder="오늘 하루는 어땠나요?"></textarea>
+
+            <div class="diary-actions">
+              <span class="sub-text small" id="diary-info"></span>
+              <div>
+                <button class="btn btn-outline" id="diary-delete">삭제</button>
+                <button class="btn btn-primary" id="diary-save">저장</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 목록 -->
+          <div class="card">
+            <div class="card-header"><h2>지난 일기</h2></div>
+            <ul class="diary-list scroll" id="diary-list"></ul>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- 일정 추가/수정 창 (모달) -->
+  <div class="modal-backdrop" id="event-modal" hidden>
+    <form class="modal" id="event-form">
+      <h2 id="modal-title">일정 추가</h2>
+
+      <label class="field">
+        <span>제목</span>
+        <input type="text" id="ev-title" placeholder="예: 딥러닝 기말 발표" required />
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span>시작일</span>
+          <input type="date" id="ev-start" required />
+        </label>
+        <label class="field">
+          <span>종료일 (선택)</span>
+          <input type="date" id="ev-end" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>시간 (선택)</span>
+        <input type="time" id="ev-time" />
+      </label>
+
+      <div class="field">
+        <span>분류</span>
+        <div class="cat-picker" id="ev-cat-picker"></div>
+      </div>
+
+      <label class="field">
+        <span>메모 (선택)</span>
+        <textarea id="ev-memo" rows="3"></textarea>
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline btn-danger" id="ev-delete">삭제</button>
+        <div>
+          <button type="button" class="btn btn-outline" id="ev-cancel">취소</button>
+          <button type="submit" class="btn btn-primary">저장</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- 저장 알림 -->
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
